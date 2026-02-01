@@ -23,6 +23,5 @@ def update(skill: Annotated[str, typer.Argument()] = ""):
     print(f"Updating {skill}")
 
 
-def main() -> None:
+if __name__ == "__main__":
     app()
-
