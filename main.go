@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"github.com/choneface/zxdf/cmd"
+)
 
 func main() {
-	fmt.Print("zxdf is alive")
+	cmd.Execute()
 }
