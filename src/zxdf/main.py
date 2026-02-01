@@ -1,12 +1,15 @@
 from typing import Annotated
 import typer
 
+from zxdf.skill_manager import addSkill
+
 app = typer.Typer()
 
 
 @app.command()
 def add(skill: str):
     print(f"Adding {skill} to known skills")
+    addSkill(skill)
 
 
 @app.command()
