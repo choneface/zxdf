@@ -1,0 +1,8 @@
+# Build
+/uv.lock
+
+# Local development
+venv/
+.venv/
+.__pycache__
+__pycache__

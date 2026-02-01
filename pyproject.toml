@@ -1,0 +1,9 @@
+[project]
+name = "zxdf"
+version = "0.0.1"
+description = "Package manager for AI skills"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "typer>=0.21.1",
+]
