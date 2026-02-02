@@ -1,5 +1,4 @@
 import json
-import os
 from platformdirs import user_data_dir
 from pathlib import Path
 
@@ -8,11 +7,11 @@ app = "zxdf"
 author = "choneface"
 data_dir = user_data_dir(app, author, ensure_exists=True)
 
-skill_metadata_file = data_dir + "/" + "skills.json" 
+skill_metadata_file = Path(data_dir) / "skills.json" 
 
 
-def saveSkillMetadata(skillmetadata):
-    if Path(skill_metadata_file).exists():
+def saveSkillMetadata(skillmetadata: dict) -> None:
+    if skill_metadata_file.exists():
         with open(skill_metadata_file, "r", encoding="utf-8") as f:
             content = json.load(f)
     else:
@@ -22,4 +21,4 @@ def saveSkillMetadata(skillmetadata):
     content["skills"].append(skillmetadata)
 
     with open(skill_metadata_file, "w", encoding="utf-8") as f:
-        content = json.dump(content, f)
+        json.dump(content, f)
