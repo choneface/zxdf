@@ -24,7 +24,6 @@ def findTools():
 def moveSkillIntoToolSkills(skillDirectory: str, tool: str):
     skillsDirectory = TOOL_INFO[tool]["skill-location"]
     if not skillsDirectory.exists():
-        print(f"{skillsDirectory} not found, making new skills directory for {tool}")
         makeDirectory(skillsDirectory)
 
     moveFiles(skillDirectory, str(skillsDirectory))
