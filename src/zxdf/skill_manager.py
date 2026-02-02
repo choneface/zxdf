@@ -7,9 +7,13 @@ def addSkill(skill: str):
     repo = toGithub(skill)
     print(f"fetching {repo} from remote")
     with tempfile.TemporaryDirectory() as temp_dir: 
-        clone(repo, temp_dir)
+        name = generateSkillName(skill)
+        skillLocation = clone(repo, temp_dir, name)
 
         tools = findTools()
         for tool in tools:
             print(f"installing skill for {tool}")
-            moveSkillIntoToolSkills(temp_dir, tool)
+            moveSkillIntoToolSkills(str(skillLocation), tool)
+
+def generateSkillName(skill: str) -> str:
+    return skill.replace("/", ":")
