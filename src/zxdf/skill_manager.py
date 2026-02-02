@@ -1,6 +1,7 @@
 import tempfile
 
 from zxdf.git import clone, toGithub
+from zxdf.systemfiles import saveSkillMetadata
 from zxdf.tool_manager import findTools, moveSkillIntoToolSkills
 
 def addSkill(skill: str): 
@@ -14,6 +15,13 @@ def addSkill(skill: str):
         for tool in tools:
             print(f"installing skill for {tool}")
             moveSkillIntoToolSkills(str(skillLocation), tool)
+
+        metadata = {
+                "skill_name": name,
+                "repository": repo,
+                "tools": tools
+        }
+        saveSkillMetadata(metadata)
 
 def generateSkillName(skill: str) -> str:
     return skill.replace("/", ":")
