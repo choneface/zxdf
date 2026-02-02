@@ -18,18 +18,27 @@ def add(skill: Annotated[str, typer.Argument(help="[bold]format: author/skillnam
 
 
 @app.command()
-def update(skill: Annotated[str, typer.Argument(help="[bold]format: author/skillname or leave empty to update all")] = ""):
+def update(
+        skill: Annotated[str, typer.Argument(help="[bold]format: author/skillname or leave empty to launch skill picker")] = "",
+        update_all: Annotated[bool, typer.Option(help="[bold]indicates all skills should be updated")] = False,
+        verify: Annotated[bool, typer.Option(help="[bold]indicates whether CLI should verify your choice before execution")] = True
+):
     """
     Update a skill by providing its slug or update all by running without skill slug
     """
-    if skill == "":
-        ans = input("Are you sure you want to update all skills? (Y/n): ")
-        if ans == "Y":
-            print("Updating all skills...") 
-            return
-        else:
-            print("No worries, exiting")
-            return 
+    skillsToBeUpdated = []
+    if update_all: 
+        skillsToBeUpdated = [] #TODO replace with getAllSkills()
+    elif skill == "":
+        skillsToBeUpdated = [] #TODO replace with skillsPicker() experience 
+    else: 
+        skillsToBeUpdated = [skill]
+    
+    if verify: 
+        #TODO verifyUpdateRequest(skillsToBeUpdated) and return based on result
+        print("Would have verified here")
+
+    #TODO call updateSkills(skillsToBeUpdated)
         
     print(f"Updating {skill}")
 
