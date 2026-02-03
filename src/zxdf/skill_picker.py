@@ -76,7 +76,7 @@ def skillPicker(console: Console) -> List[str]:
     cursor = 0
     selected: Set[int] = set()
 
-    with Live(render_picker(skills, cursor, selected), console=console, auto_refresh=False) as live:
+    with Live(render_picker(skills, cursor, selected), console=console, auto_refresh=False, transient=True) as live:
         while True:
             key = read_key()
 

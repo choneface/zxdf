@@ -1,5 +1,6 @@
 from typing import Annotated
 from rich.console import Console
+from rich.prompt import Prompt
 import typer
 
 from zxdf.skill_manager import addSkill, getAllSkills
@@ -34,12 +35,15 @@ def update(
         skillsToBeUpdated = skillPicker(console)
     else: 
         skillsToBeUpdated = [skill]
-    
-    if verify: 
-        #TODO verifyUpdateRequest(skillsToBeUpdated) and return based on result
-        print("Would have verified here")
 
-    #TODO call updateSkills(skillsToBeUpdated)
+    if verify:
+        console.print("[bold yellow]Are you sure you want to update the following skills[/bold yellow]\n")
+        for s in skillsToBeUpdated:
+            console.print(" - " + s)
+        ans = Prompt.ask("\nYour answer [bold yellow](Y/n)[/bold yellow]")
+        if ans != 'Y':
+            console.print("No worries, exiting")
+            return
         
     print(f"Updating {skill}")
 
