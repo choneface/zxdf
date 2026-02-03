@@ -2,7 +2,8 @@ from typing import Annotated
 from rich.console import Console
 import typer
 
-from zxdf.skill_manager import addSkill
+from zxdf.skill_manager import addSkill, getAllSkills
+from zxdf.skill_picker import skillPicker
 
 app = typer.Typer(help="CLI tool for managing AI skills. Interact with the CLI using skill slugs (author/skillname)")
 console = Console()
@@ -28,9 +29,9 @@ def update(
     """
     skillsToBeUpdated = []
     if update_all: 
-        skillsToBeUpdated = [] #TODO replace with getAllSkills()
+        skillsToBeUpdated = getAllSkills()
     elif skill == "":
-        skillsToBeUpdated = [] #TODO replace with skillsPicker() experience 
+        skillsToBeUpdated = skillPicker(console)
     else: 
         skillsToBeUpdated = [skill]
     

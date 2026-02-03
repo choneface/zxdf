@@ -1,7 +1,8 @@
-import tempfile, shutil
+import tempfile
+from typing import List
 
 from zxdf.git import clone, toGithub
-from zxdf.systemfiles import saveSkillMetadata
+from zxdf.systemfiles import fetchSkillMetadata, saveSkillMetadata
 from zxdf.tool_manager import findTools, moveSkillIntoToolSkills
 
 def addSkill(skill: str): 
@@ -20,6 +21,12 @@ def addSkill(skill: str):
                 "tools": tools
         }
         saveSkillMetadata(metadata)
+
+def getAllSkills() -> List:
+    skills = fetchSkillMetadata()
+    deduped = list({s["skill_name"] for s in skills})
+    ordered = sorted(deduped) 
+    return ordered
 
 def generateSkillName(skill: str) -> str:
     return skill.replace("/", "@")
