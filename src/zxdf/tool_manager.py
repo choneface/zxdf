@@ -1,6 +1,5 @@
 from pathlib import Path
 import os, shutil
-from zxdf.filesys import makeDirectory, copyFiles
 
 home_directory = Path.home()
 TOOLS = ["claude"]

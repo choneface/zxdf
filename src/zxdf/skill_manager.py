@@ -22,4 +22,4 @@ def addSkill(skill: str):
         saveSkillMetadata(metadata)
 
 def generateSkillName(skill: str) -> str:
-    return skill.replace("/", "--")
+    return skill.replace("/", "@")
