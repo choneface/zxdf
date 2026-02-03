@@ -6,4 +6,4 @@ def clone(repo: str, directory: str, name: str):
     return Path(directory) / name
 
 def toGithub(skill: str) -> str:
-    return "git@github.com:" + skill + ".git"
+    return "https://github.com/" + skill + ".git"

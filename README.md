@@ -1,5 +1,6 @@
 # zxdf
-A package manager for AI skills 
+
+A package manager for AI skills
 
 ## Development
 
@@ -9,14 +10,19 @@ We use `uv` as the package and project manager for all the Python packages in th
 
 1. Clone the GitHub repo and open a terminal at the root of the git repository `zxdf`.
 2. At the root of the repo, run the following command to setup the virtual envionrment:
+
 ```
-uv sync
+   uv sync
 ```
+
 3. Install the library in editable mode to test the actual CLI using the following command:
+
 ```bash
    uv pip install -e .
 ```
+
 Verify the installation:
+
 ```bash
    zxdf --help
 ```
