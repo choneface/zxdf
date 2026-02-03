@@ -5,7 +5,6 @@ from typing import List, Set
 from rich.console import Console
 from rich.live import Live
 from rich.text import Text
-from zxdf.skill_manager import getAllSkills
 
 
 def read_key() -> str:
@@ -65,10 +64,27 @@ def render_picker(skills: List[str], cursor: int, selected: Set[int]) -> Text:
     return text
 
 
-def skillPicker(console: Console) -> List[str]:
-    """Interactive skill picker using Rich and raw terminal input."""
-    skills = getAllSkills()
+def confirm(console: Console, message: str, items: List[str]) -> bool:
+    prompt = Text()
+    prompt.append(f"{message}\n\n", style="bold yellow")
+    for item in items:
+        prompt.append(f"  - {item}\n")
+    prompt.append("\nPress ", style="dim")
+    prompt.append("Y", style="bold green")
+    prompt.append(" to confirm or ", style="dim")
+    prompt.append("n", style="bold red")
+    prompt.append(" to cancel", style="dim")
 
+    with Live(prompt, console=console, auto_refresh=False, transient=True):
+        while True:
+            key = read_key()
+            if key in ("Y", "y"):
+                return True
+            if key in ("N", "n", "q", "\x1b", "\x03"):
+                return False
+
+
+def skillPicker(console: Console, skills: List[str]) -> List[str]:
     if not skills:
         console.print("[yellow]No skills installed[/yellow]")
         return []

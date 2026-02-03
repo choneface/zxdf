@@ -1,11 +1,9 @@
 from typing import Annotated
 from rich.console import Console
-from rich.live import Live
-from rich.text import Text
 import typer
 
 from zxdf.skill_manager import addSkill, getAllSkills, updateSkills
-from zxdf.skill_picker import skillPicker, read_key
+from zxdf.skill_picker import skillPicker, confirm
 
 app = typer.Typer(help="CLI tool for managing AI skills. Interact with the CLI using skill slugs (author/skillname)")
 console = Console()
@@ -15,7 +13,7 @@ def add(skill: Annotated[str, typer.Argument(help="[bold]format: author/skillnam
     """
     Add skill by providing skill slug
     """
-    with console.status("[bold green]Adding skill...") as status:
+    with console.status("[bold green]Adding skill..."):
         addSkill(skill)
     console.print("[bold green]Skill added")
 
@@ -29,35 +27,23 @@ def update(
     """
     Update a skill by providing its slug or update all by running without skill slug
     """
-    skillsToBeUpdated = []
-    if update_all: 
-        skillsToBeUpdated = getAllSkills()
+    if update_all:
+        skills_to_update = getAllSkills()
     elif skill == "":
-        skillsToBeUpdated = skillPicker(console)
-    else: 
-        skillsToBeUpdated = [skill]
+        skills_to_update = skillPicker(console, getAllSkills())
+    else:
+        skills_to_update = [skill]
+
+    if not skills_to_update:
+        return
 
     if verify:
-        prompt = Text()
-        prompt.append("Are you sure you want to update the following skills?\n\n", style="bold yellow")
-        for s in skillsToBeUpdated:
-            prompt.append(f"  - {s}\n")
-        prompt.append("\nPress ", style="dim")
-        prompt.append("Y", style="bold green")
-        prompt.append(" to confirm or ", style="dim")
-        prompt.append("n", style="bold red")
-        prompt.append(" to cancel", style="dim")
+        confirmed = confirm(console, "Are you sure you want to update the following skills?", skills_to_update)
+        if not confirmed:
+            console.print("No worries, exiting")
+            return
 
-        with Live(prompt, console=console, auto_refresh=False, transient=True):
-            while True:
-                key = read_key()
-                if key in ("Y", "y"):
-                    break
-                if key in ("N", "n", "q", "\x1b", "\x03"):
-                    console.print("Exiting, no changes made")
-                    return
-        
-    updateSkills(console, skillsToBeUpdated)
+    updateSkills(console, skills_to_update)
 
 
 if __name__ == "__main__":
