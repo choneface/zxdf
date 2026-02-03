@@ -26,4 +26,11 @@ def moveSkillIntoToolSkills(tempSkillDirectory: str, tool: str):
         os.mkdir(skillsDirectory)
 
     dest = skillsDirectory / Path(tempSkillDirectory).name
-    shutil.copytree(tempSkillDirectory, dest)
+
+    if dest.exists():
+        shutil.rmtree(dest)
+
+    shutil.copytree(
+        tempSkillDirectory,
+        dest,
+    )
