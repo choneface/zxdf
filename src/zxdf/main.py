@@ -1,10 +1,11 @@
 from typing import Annotated
 from rich.console import Console
-from rich.prompt import Prompt
+from rich.live import Live
+from rich.text import Text
 import typer
 
-from zxdf.skill_manager import addSkill, getAllSkills
-from zxdf.skill_picker import skillPicker
+from zxdf.skill_manager import addSkill, getAllSkills, updateSkills
+from zxdf.skill_picker import skillPicker, read_key
 
 app = typer.Typer(help="CLI tool for managing AI skills. Interact with the CLI using skill slugs (author/skillname)")
 console = Console()
@@ -37,15 +38,26 @@ def update(
         skillsToBeUpdated = [skill]
 
     if verify:
-        console.print("[bold yellow]Are you sure you want to update the following skills[/bold yellow]\n")
+        prompt = Text()
+        prompt.append("Are you sure you want to update the following skills?\n\n", style="bold yellow")
         for s in skillsToBeUpdated:
-            console.print(" - " + s)
-        ans = Prompt.ask("\nYour answer [bold yellow](Y/n)[/bold yellow]")
-        if ans != 'Y':
-            console.print("No worries, exiting")
-            return
+            prompt.append(f"  - {s}\n")
+        prompt.append("\nPress ", style="dim")
+        prompt.append("Y", style="bold green")
+        prompt.append(" to confirm or ", style="dim")
+        prompt.append("n", style="bold red")
+        prompt.append(" to cancel", style="dim")
+
+        with Live(prompt, console=console, auto_refresh=False, transient=True):
+            while True:
+                key = read_key()
+                if key in ("Y", "y"):
+                    break
+                if key in ("N", "n", "q", "\x1b", "\x03"):
+                    console.print("Exiting, no changes made")
+                    return
         
-    print(f"Updating {skill}")
+    updateSkills(console, skillsToBeUpdated)
 
 
 if __name__ == "__main__":
