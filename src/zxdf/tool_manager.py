@@ -1,6 +1,5 @@
 from pathlib import Path
-
-from zxdf.filesys import makeDirectory, copyFiles
+import os, shutil
 
 home_directory = Path.home()
 TOOLS = ["claude"]
@@ -21,10 +20,10 @@ def findTools():
     return ret
 
 
-def moveSkillIntoToolSkills(skillDirectory: str, tool: str):
+def moveSkillIntoToolSkills(tempSkillDirectory: str, tool: str):
     skillsDirectory = TOOL_INFO[tool]["skill-location"]
     if not skillsDirectory.exists():
-        makeDirectory(skillsDirectory)
+        os.mkdir(skillsDirectory)
 
-    copyFiles(skillDirectory, str(skillsDirectory))
-
+    dest = skillsDirectory / Path(tempSkillDirectory).name
+    shutil.copytree(tempSkillDirectory, dest)
