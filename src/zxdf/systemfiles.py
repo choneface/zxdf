@@ -1,4 +1,5 @@
 import json
+from typing import List
 from platformdirs import user_data_dir
 from pathlib import Path
 
@@ -22,3 +23,12 @@ def saveSkillMetadata(skillmetadata: dict) -> None:
 
     with open(skill_metadata_file, "w", encoding="utf-8") as f:
         json.dump(content, f)
+
+def fetchSkillMetadata() -> List:
+    if skill_metadata_file.exists():
+        with open(skill_metadata_file, "r", encoding="utf-8") as f:
+            content = json.load(f)
+    else:
+        content = {"skills": []}
+
+    return content["skills"]

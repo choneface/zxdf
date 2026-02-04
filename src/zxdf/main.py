@@ -2,7 +2,8 @@ from typing import Annotated
 from rich.console import Console
 import typer
 
-from zxdf.skill_manager import addSkill
+from zxdf.skill_manager import addSkill, getAllSkills, updateSkills
+from zxdf.skill_picker import skillPicker, confirm
 
 app = typer.Typer(help="CLI tool for managing AI skills. Interact with the CLI using skill slugs (author/skillname)")
 console = Console()
@@ -12,26 +13,37 @@ def add(skill: Annotated[str, typer.Argument(help="[bold]format: author/skillnam
     """
     Add skill by providing skill slug
     """
-    with console.status("[bold green]Adding skill...") as status:
+    with console.status("[bold green]Adding skill..."):
         addSkill(skill)
     console.print("[bold green]Skill added")
 
 
 @app.command()
-def update(skill: Annotated[str, typer.Argument(help="[bold]format: author/skillname or leave empty to update all")] = ""):
+def update(
+        skill: Annotated[str, typer.Argument(help="[bold]format: author/skillname or leave empty to launch skill picker")] = "",
+        update_all: Annotated[bool, typer.Option(help="[bold]indicates all skills should be updated")] = False,
+        verify: Annotated[bool, typer.Option(help="[bold]indicates whether CLI should verify your choice before execution")] = True
+):
     """
     Update a skill by providing its slug or update all by running without skill slug
     """
-    if skill == "":
-        ans = input("Are you sure you want to update all skills? (Y/n): ")
-        if ans == "Y":
-            print("Updating all skills...") 
+    if update_all:
+        skills_to_update = getAllSkills()
+    elif skill == "":
+        skills_to_update = skillPicker(console, getAllSkills())
+    else:
+        skills_to_update = [skill]
+
+    if not skills_to_update:
+        return
+
+    if verify:
+        confirmed = confirm(console, "Are you sure you want to update the following skills?", skills_to_update)
+        if not confirmed:
+            console.print("No worries, exiting")
             return
-        else:
-            print("No worries, exiting")
-            return 
-        
-    print(f"Updating {skill}")
+
+    updateSkills(console, skills_to_update)
 
 
 if __name__ == "__main__":
