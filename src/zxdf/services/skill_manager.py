@@ -3,9 +3,9 @@ from typing import List
 
 from rich.console import Console
 
-from zxdf.git import clone, toGithub
-from zxdf.systemfiles import fetchSkillMetadata, saveSkillMetadata
-from zxdf.tool_manager import findTools, moveSkillIntoToolSkills
+from zxdf.utils import clone, toGithub
+from zxdf.storage import fetchSkillMetadata, saveSkillMetadata
+from zxdf.services.tool_manager import findTools, moveSkillIntoToolSkills
 
 def addSkill(skill: str): 
     repo = toGithub(skill)
