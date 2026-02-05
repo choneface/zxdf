@@ -3,7 +3,7 @@ from typing import Annotated, List
 import typer
 from rich.console import Console
 
-from zxdf.skill_manager import addSkill, getAllSkills, updateSkills
+from zxdf.services import addSkill, getAllSkills, updateSkills
 from zxdf.view import confirm, skillPicker
 
 skill_app = typer.Typer(help="Manage AI skills")
