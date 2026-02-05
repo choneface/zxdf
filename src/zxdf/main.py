@@ -3,7 +3,7 @@ import typer
 from zxdf.commands import skill_app, tool_app
 
 app = typer.Typer(
-    help="CLI tool for managing AI skills. Use skill slugs in the format: author/skillname"
+    help="CLI tool for managing AI skills."
 )
 
 app.add_typer(skill_app, name="skill")

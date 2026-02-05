@@ -4,7 +4,7 @@ import typer
 from rich.console import Console
 
 from zxdf.skill_manager import addSkill, getAllSkills, updateSkills
-from zxdf.skill_picker import confirm, skillPicker
+from zxdf.view import confirm, skillPicker
 
 skill_app = typer.Typer(help="Manage AI skills")
 console = Console()
