@@ -2,13 +2,32 @@ import tempfile
 from typing import List
 
 from rich.console import Console
+from rich.panel import Panel
 
 from zxdf.utils import clone, toGithub
 from zxdf.storage import fetchSkillMetadata, saveSkillMetadata
 from zxdf.services.tool_manager import findTools, moveSkillIntoToolSkills
 
-def addSkill(skill: str): 
+def atLeast(x, minimium): 
+    return max(x, minimium)
+
+def addSkill(console: Console, skill: str): 
     repo = toGithub(skill)
+    tools = findTools()
+    commandString =f"zxdf skill [blue]add[/blue] {skill}\n" 
+    toolsString = "Tools: "
+    for tool in tools: 
+        toolsString+= tool + ", "
+    toolsString = toolsString[:-2]
+
+    padding_right = max(64 - max(len(commandString), len(toolsString)), 0)
+
+    infoPanel = Panel(
+        commandString + toolsString,
+        expand=False,
+        padding=(0, padding_right, 0, 0),
+    )
+    console.print(infoPanel)
     with tempfile.TemporaryDirectory() as temp_dir: 
         name = generateSkillName(skill)
         skillLocation = clone(repo, temp_dir, name)
