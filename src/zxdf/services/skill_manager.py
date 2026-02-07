@@ -7,7 +7,7 @@ from rich.panel import Panel
 from zxdf.utils import clone, toGithub
 from zxdf.storage import fetchSkillMetadata, saveSkillMetadata
 from zxdf.services.tool_manager import findTools, moveSkillIntoAllTools, moveSkillIntoToolSkills
-from zxdf.view.step import Step
+from zxdf.view.step import Action
 from zxdf.view.symbols import SYMBOL_ARROW, SYMBOL_OK
 
 def atLeast(x, minimium): 
@@ -32,22 +32,25 @@ def addSkill(console: Console, skill: str):
     console.print(infoPanel)
     console.print("")
 
-    console.print("Resolving skill source...")
-    console.print(f"{SYMBOL_OK} Resolved {skill} {SYMBOL_ARROW} {repo}\n")
+    action = Action(console)
+    # console.print("Resolving skill source...")
+    # console.print(f"{SYMBOL_OK} Resolved {skill} {SYMBOL_ARROW} {repo}\n")
+    action.info("Resolving skill source...")
+    action.okLine(f"Resolved {skill} {SYMBOL_ARROW} {repo}\n")
 
-    step = Step(console, "Fetching...")
+    action.info("Fetching...")
     name = generateSkillName(skill)
     with tempfile.TemporaryDirectory() as temp_dir: 
 
-        skillLocation = step.addSpinner("Cloning repository...", lambda: clone(repo, temp_dir, name))
-        step.addSpinner("Adding skills to tool...", lambda: moveSkillIntoAllTools(tools, skillLocation))
+        skillLocation = action.addSpinner("Cloning repository...", lambda: clone(repo, temp_dir, name))
+        action.addSpinner("Adding skills to tool...", lambda: moveSkillIntoAllTools(tools, skillLocation))
 
         metadata = {
                 "skill_name": name,
                 "repository": repo,
                 "tools": tools
         }
-        step.addSpinner("Wrapping up...", lambda: saveSkillMetadata(metadata))
+        action.addSpinner("Wrapping up...", lambda: saveSkillMetadata(metadata))
 
     rows = [{
         "skill": name,
@@ -55,7 +58,7 @@ def addSkill(console: Console, skill: str):
         "tools": ",".join(tools),
         "notes": f"added as {name}"
         }]
-    step.ok(rows)
+    action.ok(rows)
 
 def getAllSkills() -> List:
     skills = fetchSkillMetadata()

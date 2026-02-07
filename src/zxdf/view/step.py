@@ -9,13 +9,18 @@ from rich.spinner import Spinner
 from zxdf.view.symbols import SYMBOL_FAIL, SYMBOL_OK
 
 
-class Step():
-    def __init__(self, console, title) -> None:
-        self._title = title
+class Action():
+    def __init__(self, console) -> None:
         self._console = console
         self._rows = []
         self._live = Live(self._render(), console=self._console, refresh_per_second=20, transient=False)
         self._live.start()
+
+    def info(self, title: str):
+        self._rows.append(Text(title))
+
+    def okLine(self, title: str):
+        self._rows.append(Text(f"{SYMBOL_OK} {title}"))
 
     def addSpinner(self, title: str, f):
         idx = len(self._rows)
@@ -69,4 +74,4 @@ class Step():
                 lines.append(f"{row}\n")
             else:
                 lines.append(row)
-        return Group(self._title, *lines)
+        return Group(*lines)
