@@ -1,10 +1,9 @@
-from typing import Annotated, List
+from typing import Annotated
 
 import typer
 from rich.console import Console
 
-from zxdf.services import addSkill, getAllSkills, updateSkills
-from zxdf.view import confirm, skillPicker
+from zxdf.services import addSkill, updateSkills
 
 skill_app = typer.Typer(help="Manage AI skills")
 console = Console()

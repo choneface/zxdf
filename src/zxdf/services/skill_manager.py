@@ -51,8 +51,14 @@ def addSkill(console: Console, skill: str):
 
 def getAllSkills() -> List:
     skills = fetchSkillMetadata()
-    deduped = list({s["skill_name"] for s in skills})
-    ordered = sorted(deduped) 
+    deduped = []
+    seen = set()
+    for skill in skills:
+        if skill["skill_name"] not in seen:
+            seen.add(skill["skill_name"])
+            deduped.append(skill)
+
+    ordered = sorted(deduped, key = lambda x: x["skill_name"])
     return ordered
 
 def updateSkills(console: Console, skill: str, verify: bool, updateAll: bool):

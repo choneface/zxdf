@@ -21,3 +21,4 @@ SYMBOL_SEPARATOR = "|"  # summary / next steps separation
 SYMBOL_PLUS = "+"       # additive action (rare, e.g. install)
 SYMBOL_SYNC = "⇄"       # reconciliation / sync semantics
 SYMBOL_BULLET = "•"     # plan lists, dry-run previews
+SYMBOL_UNSELECTED = "○"
