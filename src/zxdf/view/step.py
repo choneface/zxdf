@@ -18,9 +18,8 @@ class Step():
         self._live.start()
 
     def addSpinner(self, title: str, f):
-        # 1) Add an in-progress renderable row
         idx = len(self._rows)
-        self._rows.append(Group(Text("  "), Spinner("dots"), Text(" "), Text(title)))
+        self._rows.append(Group(Text(" ", end=""), Spinner("dots", text=title)))
         self._refresh()
 
         try:
@@ -33,6 +32,7 @@ class Step():
             self._rows[idx] = Text(f"{SYMBOL_OK} {title}")
             self._refresh()
             return result
+
     def ok(self, rows):
         self._live.update(self._success_result(rows))
         self._live.stop()
@@ -52,7 +52,7 @@ class Step():
         for row in rows:
             table.add_row(row["skill"], row["action"], row["tools"], row["notes"])
 
-        return Group(normal_render, "Result", table)
+        return Group(normal_render, "\nResult", table)
 
     def _error_renderable(self, error: str, hint: str) -> RenderableType:
         message = f"{error} - {hint}"
@@ -65,5 +65,8 @@ class Step():
     def _render(self) -> RenderableType:
         lines = []
         for row in self._rows:
-            lines.append(f"{row}\n")
+            if isinstance(row, str): 
+                lines.append(f"{row}\n")
+            else:
+                lines.append(row)
         return Group(self._title, *lines)

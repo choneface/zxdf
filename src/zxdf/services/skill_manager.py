@@ -33,7 +33,7 @@ def addSkill(console: Console, skill: str):
     console.print("")
 
     console.print("Resolving skill source...")
-    console.print(f"{SYMBOL_OK} Resolved {skill} {SYMBOL_ARROW} {repo}")
+    console.print(f"{SYMBOL_OK} Resolved {skill} {SYMBOL_ARROW} {repo}\n")
 
     step = Step(console, "Fetching...")
     name = generateSkillName(skill)
