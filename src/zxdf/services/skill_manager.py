@@ -17,7 +17,7 @@ def addSkill(console: Console, skill: str):
     repo = toGithub(skill)
     tools = findTools()
     commandString =f"zxdf skill [blue]add[/blue] {skill}\n" 
-    infoPanel = _infoPanel(commandString, tools)
+    infoPanel = _addCommandInfoPanel(commandString, tools)
 
     action = Action(console)
     action.header(infoPanel)
@@ -53,12 +53,22 @@ def getAllSkills() -> List:
     ordered = sorted(deduped) 
     return ordered
 
-def updateSkills(console: Console, skills: List):
+def updateSkills(console: Console, skills: List, verify: bool, updateAll: bool):
+    if len(skills) == 1:
+        commandString = f"zxdf skill [blue]update[/blue] {skills[0]}\n"
+    else:
+        commandString = f"zxdf skill [blue]update[/blue] {skills[0]} and [pink]{len(skills) - 1}[/pink] more\n"
+
+    flagsString = f"Verify: [blue]{ 'yes' if verify else 'no' }[/blue]    Update All: [blue]{ 'yes' if updateAll else 'no' }[/blue]"
+
+    infoPanel = _updateCommandInfoPanel(commandString, flagsString)
+    action = Action(console)
+    action.header(infoPanel)
     all_metadata = fetchSkillMetadata()
     failures = []
 
+    action.info("Fetching...")
     for skill in skills:
-        # Find metadata for this skill
         skill_meta = None
         for meta in all_metadata:
             if meta["skill_name"] == skill:
@@ -69,18 +79,8 @@ def updateSkills(console: Console, skills: List):
             failures.append((skill, "not found in metadata"))
             continue
 
-        repo = skill_meta["repository"]
-        tools = skill_meta["tools"]
-
         try:
-            with console.status(f"[bold green]Updating {skill}..."):
-                with tempfile.TemporaryDirectory() as temp_dir:
-                    skill_location = clone(repo, temp_dir, skill)
-
-                    for tool in tools:
-                        moveSkillIntoToolSkills(str(skill_location), tool)
-
-            console.print(f"[bold green]{skill} updated")
+            action.addSpinner(f"Updating {skill}...", lambda: _updateSkillsAcrossTools(skill_meta))
         except Exception as e:
             failures.append((skill, str(e)))
             console.print(f"[bold red]{skill} failed to update")
@@ -93,7 +93,25 @@ def updateSkills(console: Console, skills: List):
 def generateSkillName(skill: str) -> str:
     return skill.replace("/", "@")
 
-def _infoPanel(commandString, tools):
+def _updateSkillsAcrossTools(skill_meta):
+    skill = skill_meta["skill_name"]
+    repo = skill_meta["repository"]
+    tools = skill_meta["tools"]
+    with tempfile.TemporaryDirectory() as temp_dir:
+        skill_location = clone(repo, temp_dir, skill)
+        for tool in tools:
+            moveSkillIntoToolSkills(str(skill_location), tool)
+
+def _updateCommandInfoPanel(commandString, flagsString):
+    padding_right = max(64 - max(len(commandString), len(flagsString)), 0)
+    return Panel(
+        commandString + flagsString,
+        expand=False,
+        padding=(0, padding_right, 0, 0),
+    )
+
+
+def _addCommandInfoPanel(commandString, tools):
     toolsString = "Tools: " + ",".join(tools)
 
     padding_right = max(64 - max(len(commandString), len(toolsString)), 0)

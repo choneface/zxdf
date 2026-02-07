@@ -52,4 +52,4 @@ def update(
             console.print("No worries, exiting")
             return
 
-    updateSkills(console, skills_to_update)
+    updateSkills(console, skills_to_update, verify, update_all)

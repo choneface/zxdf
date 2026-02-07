@@ -19,12 +19,15 @@ class Action():
     def header(self, header: Panel):
         self._rows.append(header)
         self._rows.append(Text(""))
+        self._refresh()
 
     def info(self, title: str):
         self._rows.append(Text(title))
+        self._refresh()
 
     def okLine(self, title: str):
         self._rows.append(Text(f"{SYMBOL_OK} {title}"))
+        self._refresh()
 
     def addSpinner(self, title: str, f):
         idx = len(self._rows)
