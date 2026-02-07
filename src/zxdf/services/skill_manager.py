@@ -65,7 +65,7 @@ def updateSkills(console: Console, skills: List, verify: bool, updateAll: bool):
     action = Action(console)
     action.header(infoPanel)
     all_metadata = fetchSkillMetadata()
-    failures = []
+    summary_rows = []
 
     action.info("Fetching...")
     for skill in skills:
@@ -75,20 +75,28 @@ def updateSkills(console: Console, skills: List, verify: bool, updateAll: bool):
                 skill_meta = meta
                 break
 
+        row = {
+            "skill": skill,
+            "action": "UPDATE",
+            "notes": "up-to-date"
+            }
+
         if skill_meta is None:
-            failures.append((skill, "not found in metadata"))
+            row["tools"] = ""
+            row["notes"] = "not found in metadata"
             continue
+        
+        row["tools"] = ",".join(skill_meta["tools"])
 
         try:
             action.addSpinner(f"Updating {skill}...", lambda: _updateSkillsAcrossTools(skill_meta))
-        except Exception as e:
-            failures.append((skill, str(e)))
-            console.print(f"[bold red]{skill} failed to update")
+        except Exception:
+            row["notes"] = "failed to pull from remote"
 
-    if failures:
-        console.print("\n[bold red]The following updates failed:[/bold red]")
-        for skill, reason in failures:
-            console.print(f"  - {skill}: {reason}")
+        summary_rows.append(row)
+
+    action.ok(summary_rows)
+
 
 def generateSkillName(skill: str) -> str:
     return skill.replace("/", "@")
