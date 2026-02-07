@@ -112,7 +112,7 @@ def _updateSkillsAcrossTools(skill_meta):
             moveSkillIntoToolSkills(str(skill_location), tool)
 
 def _updateCommandInfoPanel(commandString, flagsString):
-    padding_right = max(64 - max(len(commandString), len(flagsString)), 0)
+    padding_right = max(72- max(len(commandString), len(flagsString)), 0)
     return Panel(
         commandString + flagsString,
         expand=False,
