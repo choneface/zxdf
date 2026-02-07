@@ -7,7 +7,7 @@ from rich.panel import Panel
 from zxdf.utils import clone, toGithub
 from zxdf.storage import fetchSkillMetadata, saveSkillMetadata
 from zxdf.services.tool_manager import findTools, moveSkillIntoAllTools, moveSkillIntoToolSkills
-from zxdf.view.step import Action
+from zxdf.view.action import Action
 from zxdf.view.symbols import SYMBOL_ARROW
 
 def atLeast(x, minimium): 
