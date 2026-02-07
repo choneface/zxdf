@@ -84,6 +84,7 @@ def updateSkills(console: Console, skills: List, verify: bool, updateAll: bool):
         if skill_meta is None:
             row["tools"] = ""
             row["notes"] = "not found in metadata"
+            summary_rows.append(row)
             continue
         
         row["tools"] = ",".join(skill_meta["tools"])
