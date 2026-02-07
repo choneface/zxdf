@@ -8,7 +8,7 @@ from zxdf.utils import clone, toGithub
 from zxdf.storage import fetchSkillMetadata, saveSkillMetadata
 from zxdf.services.tool_manager import findTools, moveSkillIntoAllTools, moveSkillIntoToolSkills
 from zxdf.view.step import Action
-from zxdf.view.symbols import SYMBOL_ARROW, SYMBOL_OK
+from zxdf.view.symbols import SYMBOL_ARROW
 
 def atLeast(x, minimium): 
     return max(x, minimium)
@@ -17,24 +17,11 @@ def addSkill(console: Console, skill: str):
     repo = toGithub(skill)
     tools = findTools()
     commandString =f"zxdf skill [blue]add[/blue] {skill}\n" 
-    toolsString = "Tools: "
-    for tool in tools: 
-        toolsString+= tool + ", "
-    toolsString = toolsString[:-2]
-
-    padding_right = max(64 - max(len(commandString), len(toolsString)), 0)
-
-    infoPanel = Panel(
-        commandString + toolsString,
-        expand=False,
-        padding=(0, padding_right, 0, 0),
-    )
-    console.print(infoPanel)
-    console.print("")
+    infoPanel = _infoPanel(commandString, tools)
 
     action = Action(console)
-    # console.print("Resolving skill source...")
-    # console.print(f"{SYMBOL_OK} Resolved {skill} {SYMBOL_ARROW} {repo}\n")
+    action.header(infoPanel)
+
     action.info("Resolving skill source...")
     action.okLine(f"Resolved {skill} {SYMBOL_ARROW} {repo}\n")
 
@@ -43,7 +30,7 @@ def addSkill(console: Console, skill: str):
     with tempfile.TemporaryDirectory() as temp_dir: 
 
         skillLocation = action.addSpinner("Cloning repository...", lambda: clone(repo, temp_dir, name))
-        action.addSpinner("Adding skills to tool...", lambda: moveSkillIntoAllTools(tools, skillLocation))
+        action.addSpinner("Adding skill to tool...", lambda: moveSkillIntoAllTools(tools, skillLocation))
 
         metadata = {
                 "skill_name": name,
@@ -53,7 +40,7 @@ def addSkill(console: Console, skill: str):
         action.addSpinner("Wrapping up...", lambda: saveSkillMetadata(metadata))
 
     rows = [{
-        "skill": name,
+        "skill": skill,
         "action": "ADD",
         "tools": ",".join(tools),
         "notes": f"added as {name}"
@@ -105,3 +92,14 @@ def updateSkills(console: Console, skills: List):
 
 def generateSkillName(skill: str) -> str:
     return skill.replace("/", "@")
+
+def _infoPanel(commandString, tools):
+    toolsString = "Tools: " + ",".join(tools)
+
+    padding_right = max(64 - max(len(commandString), len(toolsString)), 0)
+
+    return Panel(
+        commandString + toolsString,
+        expand=False,
+        padding=(0, padding_right, 0, 0),
+    )

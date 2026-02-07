@@ -16,6 +16,10 @@ class Action():
         self._live = Live(self._render(), console=self._console, refresh_per_second=20, transient=False)
         self._live.start()
 
+    def header(self, header: Panel):
+        self._rows.append(header)
+        self._rows.append(Text(""))
+
     def info(self, title: str):
         self._rows.append(Text(title))
 
