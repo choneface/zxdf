@@ -8,6 +8,8 @@ from zxdf.utils import clone, toGithub
 from zxdf.storage import fetchSkillMetadata, saveSkillMetadata
 from zxdf.services.tool_manager import findTools, moveSkillIntoAllTools, moveSkillIntoToolSkills
 from zxdf.view.action import Action
+from zxdf.view.confirm import confirm
+from zxdf.view.picker import skillPicker
 from zxdf.view.symbols import SYMBOL_ARROW
 
 def atLeast(x, minimium): 
@@ -53,7 +55,24 @@ def getAllSkills() -> List:
     ordered = sorted(deduped) 
     return ordered
 
-def updateSkills(console: Console, skills: List, verify: bool, updateAll: bool):
+def updateSkills(console: Console, skill: str, verify: bool, updateAll: bool):
+    if updateAll:
+        skills = getAllSkills()
+    elif skill == "":
+        skills = skillPicker(console, getAllSkills())
+    else:
+        skills = [skill]
+
+    if not skills:
+        return
+
+    if verify:
+        confirmed = confirm(
+            console, "Are you sure you want to update the following skills?", skills
+        )
+        if not confirmed:
+            console.print("No worries, exiting")
+            return
     if len(skills) == 1:
         commandString = f"zxdf skill [blue]update[/blue] {skills[0]}\n"
     else:
