@@ -7,6 +7,7 @@ from rich.panel import Panel
 from zxdf.utils import clone, toGithub
 from zxdf.storage import fetchSkillMetadata, saveSkillMetadata
 from zxdf.services.tool_manager import findTools, moveSkillIntoToolSkills
+from zxdf.view.step import Step
 
 # Success / completion
 SYMBOL_OK = "✓"
@@ -56,10 +57,15 @@ def addSkill(console: Console, skill: str):
 
     console.print("Resolving skill source...")
     console.print(f"{SYMBOL_OK} Resolved {skill} {SYMBOL_ARROW} {repo}")
+
+    step = Step(console, "Fetching...")
+    name = generateSkillName(skill)
     with tempfile.TemporaryDirectory() as temp_dir: 
-        name = generateSkillName(skill)
+
+        step.addSpinner("Cloning repository...")
         skillLocation = clone(repo, temp_dir, name)
 
+        step.addSpinner("Adding skills to tool...")
         tools = findTools()
         for tool in tools:
             moveSkillIntoToolSkills(str(skillLocation), tool)
@@ -70,6 +76,14 @@ def addSkill(console: Console, skill: str):
                 "tools": tools
         }
         saveSkillMetadata(metadata)
+
+    rows = [{
+        "skill": name,
+        "action": "ADD",
+        "tools": ",".join(tools),
+        "notes": f"added as {name}"
+        }]
+    step.ok(rows)
 
 def getAllSkills() -> List:
     skills = fetchSkillMetadata()
