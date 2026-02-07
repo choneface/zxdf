@@ -3,6 +3,10 @@ from rich.console import Group, RenderableType
 from rich.live import Live
 from rich.panel import Panel
 from rich.table import Table
+from rich.text import Text
+from rich.spinner import Spinner
+
+from zxdf.view.symbols import SYMBOL_FAIL, SYMBOL_OK
 
 
 class Step():
@@ -13,18 +17,22 @@ class Step():
         self._live = Live(self._render(), console=self._console, refresh_per_second=20, transient=False)
         self._live.start()
 
-    def updateTitle(self, title: str):
-        self._title = title
-        self._live.update(self._render(), refresh=True)
+    def addSpinner(self, title: str, f):
+        # 1) Add an in-progress renderable row
+        idx = len(self._rows)
+        self._rows.append(Group(Text("  "), Spinner("dots"), Text(" "), Text(title)))
+        self._refresh()
 
-    def updateSpinner(self, title: str):
-        self._rows[-1] = title
-        self._live.update(self._render(), refresh=True)
-
-    def addSpinner(self, title: str):
-        self._rows.append(title)
-        self._live.update(self._render(), refresh=True)
-
+        try:
+            result = f()
+        except Exception:
+            self._rows[idx] = Text(f"{SYMBOL_FAIL} {title}")
+            self._refresh()
+            raise
+        else:
+            self._rows[idx] = Text(f"{SYMBOL_OK} {title}")
+            self._refresh()
+            return result
     def ok(self, rows):
         self._live.update(self._success_result(rows))
         self._live.stop()

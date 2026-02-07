@@ -6,32 +6,9 @@ from rich.panel import Panel
 
 from zxdf.utils import clone, toGithub
 from zxdf.storage import fetchSkillMetadata, saveSkillMetadata
-from zxdf.services.tool_manager import findTools, moveSkillIntoToolSkills
+from zxdf.services.tool_manager import findTools, moveSkillIntoAllTools, moveSkillIntoToolSkills
 from zxdf.view.step import Step
-
-# Success / completion
-SYMBOL_OK = "✓"
-
-# In-progress (spinner line prefix)
-SYMBOL_SPIN = "⠋"
-
-# Skipped / no-op
-SYMBOL_SKIP = "↷"
-
-# Warning (non-fatal)
-SYMBOL_WARN = "!"
-
-# Failure (non-fatal, per-item)
-SYMBOL_FAIL = "✗"
-
-# Structural / semantic
-SYMBOL_ARROW = "→"      # normalization / mapping (slug → url, from → to)
-SYMBOL_SEPARATOR = "|"  # summary / next steps separation
-
-# Optional / advanced (reserve now, even if unused)
-SYMBOL_PLUS = "+"       # additive action (rare, e.g. install)
-SYMBOL_SYNC = "⇄"       # reconciliation / sync semantics
-SYMBOL_BULLET = "•"     # plan lists, dry-run previews
+from zxdf.view.symbols import SYMBOL_ARROW, SYMBOL_OK
 
 def atLeast(x, minimium): 
     return max(x, minimium)
@@ -62,20 +39,15 @@ def addSkill(console: Console, skill: str):
     name = generateSkillName(skill)
     with tempfile.TemporaryDirectory() as temp_dir: 
 
-        step.addSpinner("Cloning repository...")
-        skillLocation = clone(repo, temp_dir, name)
-
-        step.addSpinner("Adding skills to tool...")
-        tools = findTools()
-        for tool in tools:
-            moveSkillIntoToolSkills(str(skillLocation), tool)
+        skillLocation = step.addSpinner("Cloning repository...", lambda: clone(repo, temp_dir, name))
+        step.addSpinner("Adding skills to tool...", lambda: moveSkillIntoAllTools(tools, skillLocation))
 
         metadata = {
                 "skill_name": name,
                 "repository": repo,
                 "tools": tools
         }
-        saveSkillMetadata(metadata)
+        step.addSpinner("Wrapping up...", lambda: saveSkillMetadata(metadata))
 
     rows = [{
         "skill": name,

@@ -13,9 +13,7 @@ console = Console()
 @skill_app.command()
 def add(skill: Annotated[str, typer.Argument(help="[bold]format: author/skillname")]):
     """Add a skill by providing skill slug."""
-    with console.status("[bold green]Adding skill..."):
-        addSkill(console, skill)
-    console.print("[bold green]Skill added")
+    addSkill(console, skill)
 
 
 @skill_app.command()
