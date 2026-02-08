@@ -1,10 +1,9 @@
-from typing import Annotated, List
+from typing import Annotated
 
 import typer
 from rich.console import Console
 
-from zxdf.services import addSkill, getAllSkills, updateSkills
-from zxdf.view import confirm, skillPicker
+from zxdf.services import addSkill, updateSkills
 
 skill_app = typer.Typer(help="Manage AI skills")
 console = Console()
@@ -13,9 +12,7 @@ console = Console()
 @skill_app.command()
 def add(skill: Annotated[str, typer.Argument(help="[bold]format: author/skillname")]):
     """Add a skill by providing skill slug."""
-    with console.status("[bold green]Adding skill..."):
-        addSkill(skill)
-    console.print("[bold green]Skill added")
+    addSkill(console, skill)
 
 
 @skill_app.command()
@@ -34,24 +31,4 @@ def update(
     ] = True,
 ):
     """Update a skill by providing its slug or update all by running without skill slug."""
-    skills_to_update: List[str]
-
-    if update_all:
-        skills_to_update = getAllSkills()
-    elif skill == "":
-        skills_to_update = skillPicker(console, getAllSkills())
-    else:
-        skills_to_update = [skill]
-
-    if not skills_to_update:
-        return
-
-    if verify:
-        confirmed = confirm(
-            console, "Are you sure you want to update the following skills?", skills_to_update
-        )
-        if not confirmed:
-            console.print("No worries, exiting")
-            return
-
-    updateSkills(console, skills_to_update)
+    updateSkills(console, skill, verify, update_all)

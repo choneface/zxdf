@@ -19,6 +19,9 @@ def findTools():
             ret.append(tool)
     return ret
 
+def moveSkillIntoAllTools(tools, skillLocation):
+    for tool in tools:
+        moveSkillIntoToolSkills(str(skillLocation), tool)
 
 def moveSkillIntoToolSkills(tempSkillDirectory: str, tool: str):
     skillsDirectory = TOOL_INFO[tool]["skill-location"]

@@ -4,34 +4,32 @@ from rich.console import Console
 from rich.live import Live
 from rich.text import Text
 
+from zxdf.view.symbols import SYMBOL_BULLET, SYMBOL_UNSELECTED
 from zxdf.view.terminal import read_key
 
 
-def render_picker(skills: List[str], cursor: int, selected: Set[int]) -> Text:
+def render_picker(skills: List[dict], cursor: int, selected: Set[int]) -> Text:
     """Render the skill picker display."""
     text = Text()
     text.append("Select skills to update ", style="bold")
     text.append("(↑↓ navigate, space select, enter confirm, q quit)\n\n", style="dim")
 
     for i, skill in enumerate(skills):
-        # Checkbox
-        if i in selected:
-            checkbox = "[×] "
-            checkbox_style = "green bold"
-        else:
-            checkbox = "[ ] "
-            checkbox_style = "dim"
+        skill_name = skill["skill_name"]
+        repo = skill["repository"]
+        tools = skill["tools"]
+        pointer = "> " if i == cursor else "  "
+        selected_indicator = f"{SYMBOL_BULLET} " if i in selected else f"{SYMBOL_UNSELECTED} "
+        bolded = "bold" if i == cursor else ""
 
-        # Cursor indicator and highlighting
-        if i == cursor:
-            text.append("> ", style="cyan bold")
-            text.append(checkbox, style=checkbox_style)
-            text.append(skill, style="cyan bold")
-        else:
-            text.append("  ", style="")
-            text.append(checkbox, style=checkbox_style)
-            text.append(skill, style="")
-
+        text.append(Text(pointer, end=" "))
+        text.append(Text(selected_indicator, end=" "))
+        text.append(Text(skill_name, style=bolded, end =" "))
+        text.append(Text(" - ", style=f"dim {bolded}", end = " "))
+        text.append(Text(repo, style=f"dim {bolded}", end = " "))
+        text.append(Text("\n    ", end =""))
+        text.append(Text(f"Currently installed in {len(tools)} tool{'s' if len(tools) > 1 else ''}: ", style =f"dim {bolded}", end=" "))
+        text.append(Text(",".join(tools), style=f"dim {bolded}"))
         text.append("\n")
 
     text.append("\n")
@@ -46,7 +44,7 @@ def render_picker(skills: List[str], cursor: int, selected: Set[int]) -> Text:
     return text
 
 
-def skillPicker(console: Console, skills: List[str]) -> List[str]:
+def skillPicker(console: Console, skills: List[dict]) -> List[str]:
     if not skills:
         console.print("[yellow]No skills installed[/yellow]")
         return []
@@ -78,4 +76,4 @@ def skillPicker(console: Console, skills: List[str]) -> List[str]:
             live.update(render_picker(skills, cursor, selected))
             live.refresh()
 
-    return [skills[i] for i in sorted(selected)]
+    return [skills[i]["skill_name"] for i in sorted(selected)]

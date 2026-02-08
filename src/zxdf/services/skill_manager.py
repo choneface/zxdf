@@ -2,70 +2,156 @@ import tempfile
 from typing import List
 
 from rich.console import Console
+from rich.panel import Panel
 
 from zxdf.utils import clone, toGithub
 from zxdf.storage import fetchSkillMetadata, saveSkillMetadata
-from zxdf.services.tool_manager import findTools, moveSkillIntoToolSkills
+from zxdf.services.tool_manager import findTools, moveSkillIntoAllTools, moveSkillIntoToolSkills
+from zxdf.view.action import Action
+from zxdf.view.confirm import confirm
+from zxdf.view.picker import skillPicker
+from zxdf.view.symbols import SYMBOL_ARROW
 
-def addSkill(skill: str): 
+def atLeast(x, minimium): 
+    return max(x, minimium)
+
+def addSkill(console: Console, skill: str): 
     repo = toGithub(skill)
-    with tempfile.TemporaryDirectory() as temp_dir: 
-        name = generateSkillName(skill)
-        skillLocation = clone(repo, temp_dir, name)
+    tools = findTools()
+    commandString =f"zxdf skill [blue]add[/blue] {skill}\n" 
+    infoPanel = _addCommandInfoPanel(commandString, tools)
 
-        tools = findTools()
-        for tool in tools:
-            moveSkillIntoToolSkills(str(skillLocation), tool)
+    action = Action(console)
+    action.header(infoPanel)
+
+    action.info("Resolving skill source...")
+    action.okLine(f"Resolved {skill} {SYMBOL_ARROW} {repo}\n")
+
+    action.info("Fetching...")
+    name = generateSkillName(skill)
+    with tempfile.TemporaryDirectory() as temp_dir: 
+
+        skillLocation = action.addSpinner("Cloning repository...", lambda: clone(repo, temp_dir, name))
+        action.addSpinner("Adding skill to tool...", lambda: moveSkillIntoAllTools(tools, skillLocation))
 
         metadata = {
                 "skill_name": name,
                 "repository": repo,
                 "tools": tools
         }
-        saveSkillMetadata(metadata)
+        action.addSpinner("Wrapping up...", lambda: saveSkillMetadata(metadata))
+
+    rows = [{
+        "skill": skill,
+        "action": "ADD",
+        "tools": ",".join(tools),
+        "notes": f"added as {name}"
+        }]
+    action.ok(rows)
 
 def getAllSkills() -> List:
     skills = fetchSkillMetadata()
-    deduped = list({s["skill_name"] for s in skills})
-    ordered = sorted(deduped) 
+    deduped = []
+    seen = set()
+    for skill in skills:
+        if skill["skill_name"] not in seen:
+            seen.add(skill["skill_name"])
+            deduped.append(skill)
+
+    ordered = sorted(deduped, key = lambda x: x["skill_name"])
     return ordered
 
-def updateSkills(console: Console, skills: List):
-    all_metadata = fetchSkillMetadata()
-    failures = []
+def updateSkills(console: Console, skill: str, verify: bool, updateAll: bool):
+    if updateAll:
+        skills = getAllSkills()
+    elif skill == "":
+        skills = skillPicker(console, getAllSkills())
+    else:
+        skills = [skill]
 
+    if not skills:
+        return
+
+    if verify:
+        confirmed = confirm(
+            console, "Are you sure you want to update the following skills?", skills
+        )
+        if not confirmed:
+            console.print("No worries, exiting")
+            return
+    if len(skills) == 1:
+        commandString = f"zxdf skill [blue]update[/blue] {skills[0]}\n"
+    else:
+        commandString = f"zxdf skill [blue]update[/blue] {skills[0]} and [pink]{len(skills) - 1}[/pink] more\n"
+
+    flagsString = f"Verify: [blue]{ 'yes' if verify else 'no' }[/blue]    Update All: [blue]{ 'yes' if updateAll else 'no' }[/blue]"
+
+    infoPanel = _updateCommandInfoPanel(commandString, flagsString)
+    action = Action(console)
+    action.header(infoPanel)
+    all_metadata = fetchSkillMetadata()
+    summary_rows = []
+
+    action.info("Fetching...")
     for skill in skills:
-        # Find metadata for this skill
         skill_meta = None
         for meta in all_metadata:
             if meta["skill_name"] == skill:
                 skill_meta = meta
                 break
 
-        if skill_meta is None:
-            failures.append((skill, "not found in metadata"))
-            continue
+        row = {
+            "skill": skill,
+            "action": "UPDATE",
+            "notes": "up-to-date"
+            }
 
-        repo = skill_meta["repository"]
-        tools = skill_meta["tools"]
+        if skill_meta is None:
+            row["tools"] = ""
+            row["notes"] = "not found in metadata"
+            summary_rows.append(row)
+            continue
+        
+        row["tools"] = ",".join(skill_meta["tools"])
 
         try:
-            with console.status(f"[bold green]Updating {skill}..."):
-                with tempfile.TemporaryDirectory() as temp_dir:
-                    skill_location = clone(repo, temp_dir, skill)
+            action.addSpinner(f"Updating {skill}...", lambda: _updateSkillsAcrossTools(skill_meta))
+        except Exception:
+            row["notes"] = "failed to pull from remote"
 
-                    for tool in tools:
-                        moveSkillIntoToolSkills(str(skill_location), tool)
+        summary_rows.append(row)
 
-            console.print(f"[bold green]{skill} updated")
-        except Exception as e:
-            failures.append((skill, str(e)))
-            console.print(f"[bold red]{skill} failed to update")
+    action.ok(summary_rows)
 
-    if failures:
-        console.print("\n[bold red]The following updates failed:[/bold red]")
-        for skill, reason in failures:
-            console.print(f"  - {skill}: {reason}")
 
 def generateSkillName(skill: str) -> str:
     return skill.replace("/", "@")
+
+def _updateSkillsAcrossTools(skill_meta):
+    skill = skill_meta["skill_name"]
+    repo = skill_meta["repository"]
+    tools = skill_meta["tools"]
+    with tempfile.TemporaryDirectory() as temp_dir:
+        skill_location = clone(repo, temp_dir, skill)
+        for tool in tools:
+            moveSkillIntoToolSkills(str(skill_location), tool)
+
+def _updateCommandInfoPanel(commandString, flagsString):
+    padding_right = max(72- max(len(commandString), len(flagsString)), 0)
+    return Panel(
+        commandString + flagsString,
+        expand=False,
+        padding=(0, padding_right, 0, 0),
+    )
+
+
+def _addCommandInfoPanel(commandString, tools):
+    toolsString = "Tools: " + ",".join(tools)
+
+    padding_right = max(64 - max(len(commandString), len(toolsString)), 0)
+
+    return Panel(
+        commandString + toolsString,
+        expand=False,
+        padding=(0, padding_right, 0, 0),
+    )
