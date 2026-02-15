@@ -4,7 +4,7 @@ from rich.console import Console
 from rich.live import Live
 from rich.text import Text
 
-from zxdf.view.terminal import read_key
+from readchar import readkey, key
 
 
 def confirm(console: Console, message: str, items: List[str]) -> bool:
@@ -20,8 +20,12 @@ def confirm(console: Console, message: str, items: List[str]) -> bool:
 
     with Live(prompt, console=console, auto_refresh=False, transient=True):
         while True:
-            key = read_key()
-            if key in ("Y", "y"):
-                return True
-            if key in ("N", "n", "q", "\x1b", "\x03"):
+            try:
+                key_press = readkey()
+                if key_press in ("Y", "y"):
+                    return True
+                if key_press in ("N", "n", "q", key.ESC):
+                    return False
+            except KeyboardInterrupt:
+                # Handle Ctrl+C
                 return False

@@ -51,7 +51,7 @@ def update(
             console, "Are you sure you want to update the following skills?", skills_to_update
         )
         if not confirmed:
-            console.print("No worries, exiting")
+            console.print("No worries, exiting.")
             return
 
     updateSkills(console, skills_to_update)
