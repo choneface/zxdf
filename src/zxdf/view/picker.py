@@ -4,7 +4,7 @@ from rich.console import Console
 from rich.live import Live
 from rich.text import Text
 
-from zxdf.view.terminal import read_key
+from readchar import readkey, key
 
 
 def render_picker(skills: List[str], cursor: int, selected: Set[int]) -> Text:
@@ -56,23 +56,25 @@ def skillPicker(console: Console, skills: List[str]) -> List[str]:
 
     with Live(render_picker(skills, cursor, selected), console=console, auto_refresh=False, transient=True) as live:
         while True:
-            key = read_key()
+            try:
+                key_press = readkey()
 
-            if key == "\x1b[A":  # Up arrow
-                cursor = (cursor - 1) % len(skills)
-            elif key == "\x1b[B":  # Down arrow
-                cursor = (cursor + 1) % len(skills)
-            elif key == " ":  # Space - toggle selection
-                if cursor in selected:
-                    selected.remove(cursor)
-                else:
-                    selected.add(cursor)
-            elif key in ("\r", "\n"):  # Enter - confirm
-                if selected:
-                    break
-            elif key in ("q", "Q", "\x1b"):  # q or Escape - quit
-                return []
-            elif key == "\x03":  # Ctrl+C
+                if key_press == key.UP:
+                    cursor = (cursor - 1) % len(skills)
+                elif key_press == key.DOWN:  # Down arrow
+                    cursor = (cursor + 1) % len(skills)
+                elif key_press == key.SPACE:  # Space - toggle selection
+                    if cursor in selected:
+                        selected.remove(cursor)
+                    else:
+                        selected.add(cursor)
+                elif key_press == key.ENTER:
+                    if selected:
+                        break
+                elif key_press in ("q", "Q", "\x1b"):  # q or Escape - quit
+                    return []
+            except KeyboardInterrupt:
+                # Handle Ctrl+C
                 return []
 
             live.update(render_picker(skills, cursor, selected))
